@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = YellowBrickRoad::VERSION
   s.authors     = ["alitn"]
   s.email       = [""]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of YellowBrickRoad."
-  s.description = "TODO: Description of YellowBrickRoad."
+  s.homepage    = "https://github.com/alitn/yellow-brick-road"
+  s.summary     = "Closure library on rails"
+  s.description = "A set of tools for integrating google closure library into rails."
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["Rakefile", "README.rst"]
   s.test_files = Dir["test/**/*"]
