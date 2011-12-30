@@ -1,0 +1,4 @@
+
+root: ./my-closure
+
+//= require_closure_root ./my-closure
