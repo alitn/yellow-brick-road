@@ -16,12 +16,12 @@ To use yellow-brick-road in rails, add the gem to ``Gemfile``:
 
 ::
   
-  gem 'yellow-brick-road', :git => 'git://github.com/alitn/yellow-brick-road.git'
+  gem 'yellow-brick-road', :git => 'git://github.com/alitn/yellow-brick-road.git', :submodules => true
+
+A copy of the closure library comes with the gem as a git submodule. The ``:submodules => true`` option is required to clone this copy.
 
 Integrating closure library
 +++++++++++++++++++++++++++
-
-A copy of the closure library comes with the gem as a git submodule.
 
 Yellow-brick-road provides a `sprockets <https://github.com/sstephenson/sprockets>`_ directive for requiring a closure root. Given ``my-closure-app/`` as a closure app directory, it can be required by:
 
