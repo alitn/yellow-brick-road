@@ -44,10 +44,11 @@ private
   def generate_closure_dependencies
     return nil if @closure_roots.empty? || @has_executed_closure_builder
 
+    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr} ../../'" }
+
     result = Utils::run_command CLOSURE_DEPSWRITER,
       command_options: {
-        root_with_prefix: "'#{CLOSURE_LIBRARY_ROOT} ../../'",
-        root: @closure_roots,
+        root_with_prefix: closure_roots_with_prefix,
         output_file: @closure_deps_file
       },
       command_error_message: 'An error occured while running closure depswriter.py.'
