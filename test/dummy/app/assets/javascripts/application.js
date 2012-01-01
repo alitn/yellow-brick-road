@@ -7,5 +7,6 @@
 //= require jquery
 //= require jquery_ujs
 //= require_closure_root ./my-closure
+//= require ./my-closure/simple.js.soy
 //= require ./my-closure/start
 //

@@ -1,5 +1,6 @@
 require 'yellow-brick-road/version'
-require 'yellow-brick-road/definitions'
+require 'yellow-brick-road/config'
 require 'yellow-brick-road/utils'
 require 'yellow-brick-road/directive_processor'
+require 'yellow-brick-road/soy_processor'
 require 'yellow-brick-road/engine'

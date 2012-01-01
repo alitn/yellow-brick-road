@@ -44,6 +44,10 @@ private
   def generate_closure_dependencies
     return nil if @closure_roots.empty? || @has_executed_closure_builder
 
+    if !Config.standalone_soy
+      @closure_roots.unshift << CLOSURE_SOYUTILS_USEGOOG_ROOT
+    end
+
     closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr} ../../'" }
 
     result = Utils::run_command CLOSURE_DEPSWRITER,
