@@ -5,12 +5,15 @@ class Utils
 
   def self.run_command command, options
     options = {
+      command_arg: nil,
       command_options: {},
       command_error_message: "An error occured while running command: #{command}"
     }.merge options
 
     command_options = self.serialize_options options[:command_options]
-    command_string = [command, command_options].flatten.join(' ')
+    command_properties = [command, command_options]
+    command_properties << options[:command_arg] if options[:command_arg]
+    command_string = command_properties.flatten.join(' ')
 
     begin
       stdin, stdout, stderr = Open3.popen3 command_string

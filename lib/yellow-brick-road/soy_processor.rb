@@ -1,5 +1,4 @@
 require 'tilt'
-require 'closure'
 
 module YellowBrickRoad
 class SoyProcessor < Tilt::Template
@@ -14,6 +13,15 @@ class SoyProcessor < Tilt::Template
 
   def prepare
     @namespace = self.class.default_namespace
+
+    @compiler_options = {}
+    if !Config.standalone_soy
+      @compiler_options.merge!({
+        shouldProvideRequireSoyNamespaces: '',
+        shouldGenerateJsdoc: '',
+        cssHandlingScheme: 'goog'
+      })
+    end
   end
 
   attr_reader :namespace
@@ -22,18 +30,9 @@ class SoyProcessor < Tilt::Template
     # Since SoyToJsSrcCompiler does not provide a stdout access to
     # the output, the output is written to a tempfile.
     tempoutput = Rails.root.join 'tmp', "soy-#{Time.now.to_i.to_s}.js"
+    compiler_options= @compiler_options.merge outputPathFormat: tempoutput
 
-    compiler_args = []
-    if !Config.standalone_soy
-      compiler_args = compiler_args | %w{
-        --shouldProvideRequireSoyNamespaces
-        --cssHandlingScheme goog
-        --shouldGenerateJsdoc
-      }
-    end
-    compiler_args << "--outputPathFormat" << tempoutput
-    compiler_args << file
-    compile compiler_args
+    compile compiler_options
 
     @output = IO.read tempoutput
     File.delete tempoutput
@@ -43,13 +42,11 @@ class SoyProcessor < Tilt::Template
 
 private
 
-  def compile args
-    args = args.collect {|a| a.to_s } # for bools and numerics
-
-    out, err = Closure.run_java Closure.config.soy_js_jar, 'com.google.template.soy.SoyToJsSrcCompiler', args
-    unless err.empty?
-      raise err
-    end
+  def compile compiler_options
+    result = Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
+      command_arg: file,
+      command_options: compiler_options,
+      command_error_message: 'An error occured while running closure soy template compiler.'
   end
 
 end
