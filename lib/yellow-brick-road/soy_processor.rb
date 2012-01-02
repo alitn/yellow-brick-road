@@ -15,7 +15,7 @@ class SoyProcessor < Tilt::Template
     @namespace = self.class.default_namespace
 
     @compiler_options = {}
-    if !Config.standalone_soy
+    if !YellowBrickRoad.standalone_soy
       @compiler_options.merge!({
         shouldProvideRequireSoyNamespaces: '',
         shouldGenerateJsdoc: '',

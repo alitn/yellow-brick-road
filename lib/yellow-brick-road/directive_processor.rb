@@ -6,12 +6,13 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
   def prepare
     super
     @closure_roots = []
-    @closure_deps_file = Rails.root.join 'app', 'assets', 'javascripts', 'closure-deps.js'
+    @closure_deps_file = Rails.root.join *CLOSURE_DEPS_FILE_RELPATH
+    @closure_root_prefix = File.join '..', '..'
     @has_executed_closure_builder = false
   end
 
   def process_require_closure_root_directive path
-    context.require_asset CLOSURE_LIBRARY_BASE
+    context.require_asset YellowBrickRoad.closure_library_base
     context.require_asset @closure_deps_file
 
     if relative? path
@@ -44,13 +45,13 @@ private
   def generate_closure_dependencies
     return nil if @closure_roots.empty? || @has_executed_closure_builder
 
-    if !Config.standalone_soy
+    if !YellowBrickRoad.standalone_soy
       @closure_roots.unshift << CLOSURE_SOYUTILS_USEGOOG_ROOT
     end
 
-    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr} ../../'" }
+    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr} #{@closure_root_prefix}'" }
 
-    result = Utils::run_command CLOSURE_DEPSWRITER,
+    result = Utils::run_command YellowBrickRoad.closure_deps_writer,
       command_options: {
         root_with_prefix: closure_roots_with_prefix,
         output_file: @closure_deps_file

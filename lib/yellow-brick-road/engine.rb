@@ -4,9 +4,9 @@ CONFIG = ActiveSupport::OrderedOptions.new
 class Engine < Rails::Engine
 
   initializer :yellow_brick_road do |app|
-    app.assets.append_path CLOSURE_LIBRARY_ROOT
+    app.assets.append_path YellowBrickRoad.closure_library_root
 
-    if Config.standalone_soy
+    if YellowBrickRoad.standalone_soy
       app.assets.append_path CLOSURE_SOYUTILS_ROOT
     else
       app.assets.append_path CLOSURE_SOYUTILS_USEGOOG_ROOT
