@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    yellow-brick-road (0.0.1)
+    yellow-brick-road (0.1.0)
       closure (~> 1.4.3)
       rails (~> 3.1.3)
 
