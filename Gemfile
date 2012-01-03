@@ -5,6 +5,10 @@ source "http://rubygems.org"
 # development dependencies will be added by default to the :development group.
 gemspec
 
+gem 'closure-library-wrapper',
+  :git => 'git://github.com/alitn/closure-library-wrapper.git',
+  :submodules => true
+
 # jquery-rails is used by the dummy application
 gem "jquery-rails"
 

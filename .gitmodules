@@ -1,4 +1,0 @@
-[submodule "vendor/closure-library"]
-	path = vendor/closure-library
-	url = git://github.com/jarib/google-closure-library.git
-	ignore = dirty

@@ -1,10 +1,12 @@
+require 'closure-library-wrapper'
+
 module YellowBrickRoad
   # Constants.
 
   ROOT = File.expand_path File.join(File.dirname(__FILE__), '..', '..')
   VENDOR_ROOT = File.join ROOT, 'vendor'
 
-  CLOSURE_LIBRARY_ROOT_INTERNAL = File.join VENDOR_ROOT, 'closure-library'
+  CLOSURE_LIBRARY_ROOT_INTERNAL = ClosureLibraryWrapper.closure_library_root
   CLOSURE_LIBRARY_BASE_RELPATH = ['closure', 'goog', 'base.js']
   CLOSURE_DEPSWRITER_RELPATH = ['closure', 'bin', 'build', 'depswriter.py']
 
@@ -30,6 +32,10 @@ module YellowBrickRoad
 
   mattr_accessor :standalone_soy
   @@stand_alone_soy = false
+
+  def self.closure_library_lock_at commit_id
+    ClosureLibraryWrapper.lock_at commit_id
+  end
 
   def self.setup
     yield self

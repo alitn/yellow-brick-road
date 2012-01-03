@@ -1,5 +1,4 @@
 module YellowBrickRoad
-CONFIG = ActiveSupport::OrderedOptions.new
 
 class Engine < Rails::Engine
 

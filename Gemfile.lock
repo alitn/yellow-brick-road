@@ -1,3 +1,11 @@
+GIT
+  remote: git://github.com/alitn/closure-library-wrapper.git
+  revision: b30bab11ab834b79b23d0d411eff7c250cf6a2a0
+  submodules: true
+  specs:
+    closure-library-wrapper (0.1.0)
+      git
+
 PATH
   remote: .
   specs:
@@ -38,6 +46,7 @@ GEM
     arel (2.2.1)
     builder (3.0.0)
     erubis (2.7.0)
+    git (1.2.5)
     hike (1.2.1)
     i18n (0.6.0)
     jquery-rails (1.0.19)
@@ -94,6 +103,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  closure-library-wrapper!
   jquery-rails
   sqlite3
   yellow-brick-road!
