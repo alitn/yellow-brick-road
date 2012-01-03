@@ -7,13 +7,15 @@ Closure library on rails
 ..  image:: http://i.imgur.com/BeZpM.jpg
     :align: right
 
-Yellow-brick-road is a set of tools to integrate google `closure library <http://code.google.com/closure/library/>`_ and `soy closure template <http://code.google.com/closure/templates/>`_ into rails. This gem can be used for:
+Yellow-brick-road is a set of tools to integrate google `closure library <http://code.google.com/closure/library/>`_ and `soy closure template <http://code.google.com/closure/templates/>`_ into rails. This gem is for:
 
-* Automatic dependency generation of a closure-library based application, just add the ``//= require_closure_root`` directive.
+* Automatic dependency generation of a closure library based application, just add the ``//= require_closure_root`` directive.
 
-* Using soy templates as part of the closure-library.
+* Using soy templates as part of the closure library.
 
-* Using stand-alone soy templates without closure-library, just configure the gem add the ``.js.soy`` file in assets directory, and it gets compiled automatically.
+* Using stand-alone soy templates without closure library, just configure the gem add the ``.js.soy`` file in assets directory, and it gets compiled automatically.
+
+* Using a managed closure library source which can be shared among rails applications.
 
 Setup
 +++++
@@ -22,13 +24,39 @@ To use yellow-brick-road in rails, add the gem to ``Gemfile``:
 
 ::
   
-  gem 'yellow-brick-road',
-    :submodules => true
+  gem 'yellow-brick-road'
 
-A copy of the closure library comes with the gem as a git submodule. The ``:submodules => true`` option is required to clone this copy.
+Then use this generator for create an initializer:
+
+::
+  
+  rails generate yellow_brick_road:install
+
+Configuration
++++++++++++++
+
+Using the internal closure library
+''''''''''''''''''''''''''''''''''
+
+Yellow-brick-road comes with an internal copy of the closure library. This is based on the `closure-library-wrapper <https://github.com/alitn/closure-library-wrapper>`_ gem which keep a `svn mirror of closure library <https://github.com/jarib/google-closure-library>`_ as a submodule.
+
+Once the generator creates the initializer, it locks the closure library source by its commit id. You can change this commit id using ``closure_library_lock_at`` and `this git repository <https://github.com/jarib/google-closure-library>`_ .
+
+Using your own closure library
+''''''''''''''''''''''''''''''
+
+An external closure library path can be configured by ``closure_library_root``.
+
+Using standalone soy
+''''''''''''''''''''
+
+By setting ``standalone_soy = true`` sy templates can be compiled independent of closure library. See usage for more.
+
+Usage
++++++
 
 Integrating closure library
-+++++++++++++++++++++++++++
+'''''''''''''''''''''''''''
 
 Yellow-brick-road provides a `sprockets <https://github.com/sstephenson/sprockets>`_ directive for requiring a closure root. Given ``my-closure-app/`` as a closure app directory, it can be required by:
 
@@ -47,8 +75,8 @@ The former tag is the base requirement for closure library.
 
 The latter tag, generated using `depswriter.py <http://code.google.com/closure/library/docs/depswriter.html>`_, is the dependency structure of the closure application. When the required closure root is modified, this dependency file is regenerated. It is safe to ignore this file in source revision control.
 
-Soy templates used with closure-library
-+++++++++++++++++++++++++++++++++++++++
+Soy templates used with closure library
+'''''''''''''''''''''''''''''''''''''''
 
 Requiring a ``.js.soy`` template works out-of-the-box:
 
@@ -56,7 +84,7 @@ Requiring a ``.js.soy`` template works out-of-the-box:
   
   //= require simple.js.soy
   
-By default, it is assumed that soy templates are used as part of the closure-library. The gem adds the ``soyutils_usegoog.js`` file to closure dependency search path, and the soy templates get compiled with these options:
+By default, it is assumed that soy templates are used as part of the closure library. The gem adds the ``soyutils_usegoog.js`` file to closure dependency search path, and the soy templates get compiled with these options:
 
 ::
   
@@ -110,17 +138,11 @@ is compiled to:
   };
 
 Standalone Soy templates
-++++++++++++++++++++++++
+''''''''''''''''''''''''
 
-Yellow-brick-road can also be used for automatic compilation of soy templates without the use of closure-library. This helps to integrate soy templates with other javascript frameworks like backbone.js.
+Yellow-brick-road can also be used for automatic compilation of soy templates without the use of closure library. This helps to integrate soy templates with other javascript frameworks like backbone.js.
 
-To do this, add this line to a rails initializer, eg ``config/initializers/yellow_brick_road.rb``:
-
-::
-  
-  YellowBrickRoad::Config.standalone_soy = true
-  
-Then require the soy javascript utility, which is shipped with the gem:
+To do this, use ``standalone_soy = true`` in the initializer, then require the soy javascript utility, which is shipped with the gem:
 
 ::
   
