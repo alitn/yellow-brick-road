@@ -20,20 +20,25 @@ Yellow-brick-road is a set of tools to integrate google `closure library <http:/
 Setup
 +++++
 
-To use yellow-brick-road in rails, add the gem to ``Gemfile``:
+To use yellow-brick-road in rails, add these gems to ``Gemfile``:
 
 ::
   
   gem 'yellow-brick-road'
+  gem 'closure-library-wrapper',
+    :git => 'git://github.com/alitn/closure-library-wrapper.git',
+    :submodules => true
+    
+When an external closure library source is used, the second gem is not necessary.
 
-Then use this generator for create an initializer:
+Configuration
++++++++++++++
+
+Run this generator to create an initializer for yello-brick-road:
 
 ::
   
   rails generate yellow_brick_road:install
-
-Configuration
-+++++++++++++
 
 Using the internal closure library
 ''''''''''''''''''''''''''''''''''
