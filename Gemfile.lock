@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/alitn/closure-library-wrapper.git
-  revision: b30bab11ab834b79b23d0d411eff7c250cf6a2a0
+  revision: 031d1d0f0e508d70a1cd5283160534ef4106638c
   submodules: true
   specs:
     closure-library-wrapper (0.1.0)

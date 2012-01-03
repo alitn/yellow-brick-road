@@ -6,7 +6,7 @@ YellowBrickRoad.setup do |config|
   # https://github.com/alitn/closure-library-wrapper gem.
   #
   # If you change this commit-id, you will need to restart rails.
-  config.closure_library_lock_at 'e67b83515e9cde8a3c42db7621123bcbe19560c3'
+  config.closure_library_lock_at '<%=ClosureLibraryWrapper.current_commit_id%>'
 
   # Uncomment this to set the closure library root to an external directory.
   # When this options is used, the above commit-id lock will be ignored.
