@@ -32,7 +32,11 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
       raise ArgumentError, 'require_closure_root argument must be a relative path'
     end
 
-    @closure_roots << closure_root.to_s
+    relpath = path.starts_with?('./') ? path[2..-1] : path
+    @closure_roots << {
+      path: closure_root.to_s,
+      path_relative_to_goog_base: File.join('..', '..', relpath)
+    }
   end
 
   def process_directives
@@ -46,10 +50,13 @@ private
     return nil if @closure_roots.empty? || @has_executed_closure_builder
 
     if !YellowBrickRoad.standalone_soy
-      @closure_roots.unshift << CLOSURE_SOYUTILS_USEGOOG_ROOT
+      @closure_roots.unshift << {
+        path: CLOSURE_SOYUTILS_USEGOOG_ROOT,
+        path_relative_to_goog_base: '/'
+      }
     end
 
-    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr} #{@closure_root_prefix}'" }
+    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr[:path]} #{cr[:path_relative_to_goog_base]}'" }
 
     result = Utils::run_command YellowBrickRoad.closure_deps_writer,
       command_options: {
