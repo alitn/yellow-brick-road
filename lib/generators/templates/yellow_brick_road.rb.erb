@@ -12,6 +12,13 @@ YellowBrickRoad.setup do |config|
   # When this options is used, the above commit-id lock will be ignored.
   # config.closure_library_root = '/path/to/your/closure-library-root'
 
+  # Set a namespace or an array of namespaces of your closure
+  # app to be passed to closurebuilder.py, see: 
+  # http://code.google.com/closure/library/docs/closurebuilder.html
+  # This a required options when Rails.application.config.assets.debug
+  # is set to false.
+  # config.closure_namespace = 'your.closure.namespace'
+
   # Uncomment this to use yellow-brick-road as an standalone
   # soy template compiler. If this option is used, the output
   # of the compiler will be different -- see the documentation.

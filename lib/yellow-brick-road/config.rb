@@ -38,8 +38,10 @@ module YellowBrickRoad
     self.update_closure_library_properties
   end
 
-  mattr_accessor :concat_closure_roots
+  mattr_accessor :closure_namespace
+  @@closure_namespace = ''
 
+  mattr_accessor :concat_closure_roots
   def self.initClosureConfig
     @@concat_closure_roots = !Rails.application.config.assets.debug
   end

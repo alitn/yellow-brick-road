@@ -94,6 +94,16 @@ private
   end
 
   def generate_concat
+    namespace = YellowBrickRoad.closure_namespace
+    if namespace.empty?
+      raise <<-FIN
+        No closure namespace was given. One or more input files to
+        calculate dependencies is required by closurebuilder.py. Set
+        a namespace or an array of namespaces to YellowBrickRoad.closure_namespace
+        in the initializer.
+      FIN
+    end
+
     closure_roots = @closure_roots.map { |cr| cr[:path] }
     closure_roots.unshift YellowBrickRoad.closure_library_third_party
     closure_roots.unshift YellowBrickRoad.closure_library_goog
@@ -111,7 +121,7 @@ private
       command_options: {
         root: closure_roots,
         output_mode: 'script',
-        namespace: 'interaxt.app',
+        namespace: namespace,
         output_file: @closure_deps_file
       },
       command_error_message: 'An error occured while running closurebuilder.py.'
