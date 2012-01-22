@@ -3,8 +3,10 @@ module YellowBrickRoad
 class Engine < Rails::Engine
 
   initializer :yellow_brick_road do |app|
-    Rails.application.assets.cache.clear
-    
+    if YellowBrickRoad.clear_asset_cache_on_startup
+      Rails.application.assets.cache.clear
+    end
+
     YellowBrickRoad.initClosureConfig
     app.assets.append_path YellowBrickRoad.closure_library_root
 

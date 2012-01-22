@@ -46,6 +46,9 @@ module YellowBrickRoad
     @@concat_closure_roots = !Rails.application.config.assets.debug
   end
 
+  mattr_accessor :clear_asset_cache_on_startup
+  @@clear_asset_cache_on_startup = true
+
   mattr_reader :protobuf_enabled
   @@protobuf_enabled = false
 
