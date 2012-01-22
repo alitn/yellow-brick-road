@@ -21,7 +21,13 @@ class Utils
       raise "#{options[:command_error_message]}\n\n#{error.message}"
     end
 
-    stdout.readlines
+    err = stderr.readlines
+    if false# !err.empty?
+      err = err.join('')
+      # Wrap longs texts.
+      err.gsub!(/(.{1,#{120}})( +|$\n?)|(.{1,#{120}})/, "\\1\\3\n")
+      raise "#{options[:command_error_message]}\n\n#{err}"
+    end
   end
 
   private

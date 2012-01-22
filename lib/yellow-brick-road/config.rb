@@ -7,8 +7,12 @@ module YellowBrickRoad
   VENDOR_ROOT = File.join ROOT, 'vendor'
 
   CLOSURE_LIBRARY_ROOT_INTERNAL = ClosureLibraryWrapper.closure_library_root
-  CLOSURE_LIBRARY_BASE_RELPATH = ['closure', 'goog', 'base.js']
+  CLOSURE_LIBRARY_GOOG_RELPATH = ['closure', 'goog']
+  CLOSURE_LIBRARY_THIRD_PARTY_RELPATH = ['third_party', 'closure', 'goog']
+  CLOSURE_LIBRARY_BASE_FILE_NAME = 'base.js'
+  CLOSURE_LIBRARY_DEPS_FILE_NAME = 'deps.js'
   CLOSURE_DEPSWRITER_RELPATH = ['closure', 'bin', 'build', 'depswriter.py']
+  CLOSURE_BUILDER_RELPATH = ['closure', 'bin', 'build', 'closurebuilder.py']
 
   CLOSURE_SOYUTILS_ROOT = File.join VENDOR_ROOT, 'closure-soyutils'
   CLOSURE_SOYUTILS_USEGOOG_ROOT = File.join VENDOR_ROOT, 'closure-soyutils-usegoog'
@@ -19,15 +23,25 @@ module YellowBrickRoad
 
   # Config.
 
+  mattr_reader :closure_deps_writer
+  mattr_reader :closure_builder
+
+  mattr_reader :closure_library_goog
+  mattr_reader :closure_library_third_party
+  mattr_reader :closure_library_base
+  mattr_reader :closure_library_deps
+
   mattr_accessor :closure_library_root
   @@closure_library_root = CLOSURE_LIBRARY_ROOT_INTERNAL
-
-  mattr_reader :closure_deps_writer
-  mattr_reader :closure_library_base
-
   def self.closure_library_root= value
     @@closure_library_root = value
     self.update_closure_library_properties
+  end
+
+  mattr_accessor :concat_closure_roots
+
+  def self.initClosureConfig
+    @@concat_closure_roots = !Rails.application.config.assets.debug
   end
 
   mattr_reader :protobuf_enabled
@@ -57,11 +71,15 @@ module YellowBrickRoad
     yield self
   end
 
-  private
+private
 
   def self.update_closure_library_properties
     @@closure_deps_writer = File.join @@closure_library_root, *CLOSURE_DEPSWRITER_RELPATH
-    @@closure_library_base = File.join @@closure_library_root, *CLOSURE_LIBRARY_BASE_RELPATH
+    @@closure_builder = File.join @@closure_library_root, *CLOSURE_BUILDER_RELPATH
+    @@closure_library_goog = File.join @@closure_library_root, *CLOSURE_LIBRARY_GOOG_RELPATH
+    @@closure_library_third_party = File.join @@closure_library_root, *CLOSURE_LIBRARY_THIRD_PARTY_RELPATH
+    @@closure_library_base = File.join @@closure_library_goog, CLOSURE_LIBRARY_BASE_FILE_NAME
+    @@closure_library_deps = File.join @@closure_library_goog, CLOSURE_LIBRARY_DEPS_FILE_NAME
   end
   self.update_closure_library_properties
 

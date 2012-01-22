@@ -3,6 +3,9 @@ module YellowBrickRoad
 class Engine < Rails::Engine
 
   initializer :yellow_brick_road do |app|
+    Rails.application.assets.cache.clear
+    
+    YellowBrickRoad.initClosureConfig
     app.assets.append_path YellowBrickRoad.closure_library_root
 
     if YellowBrickRoad.standalone_soy
