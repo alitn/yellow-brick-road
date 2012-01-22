@@ -1,4 +1,5 @@
 require 'tilt'
+require 'tempfile'
 
 module YellowBrickRoad
 class SoyProcessor < Tilt::Template
@@ -36,13 +37,14 @@ class SoyProcessor < Tilt::Template
 
     # Since SoyToJsSrcCompiler does not provide a stdout access to
     # the output, the output is written to a tempfile.
-    tempoutput = Rails.root.join 'tmp', "soy-#{Time.now.to_i.to_s}.js"
-    compiler_options= @compiler_options.merge outputPathFormat: tempoutput
+    # tempoutput = Rails.root.join 'tmp', "soy-#{Time.now.to_i.to_s}.js"
+    tempfile = Tempfile.new 'soy'
+    compiler_options = @compiler_options.merge outputPathFormat: tempfile.path
 
     compile compiler_options
 
-    @output = IO.read tempoutput
-    File.delete tempoutput
+    @output = IO.read tempfile.path
+    tempfile.unlink
 
     @output
   end
