@@ -78,8 +78,10 @@ private
   end
 
   def generate_no_concat
+    # Gather roots.
     closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr[:path]} #{cr[:path_relative_to_goog_base]}'" }
 
+    # Run depswriter.
     result = Utils::run_command YellowBrickRoad.closure_deps_writer,
       command_options: {
         root_with_prefix: closure_roots_with_prefix,
@@ -87,6 +89,7 @@ private
       },
       command_error_message: 'An error occured while running closure depswriter.py.'
     
+    # Clean up and report.
     closure_roots = @closure_roots.map { |cr| cr[:path] }
     Rails.logger.info "Executed closure depswriter.py on root paths: #{closure_roots.join(', ')}"
 
@@ -94,6 +97,7 @@ private
   end
 
   def generate_concat
+    # Check for namespace.
     namespace = YellowBrickRoad.closure_namespace
     if namespace.empty?
       raise <<-FIN
@@ -104,19 +108,21 @@ private
       FIN
     end
 
+    # Gather roots.
     closure_roots = @closure_roots.map { |cr| cr[:path] }
     closure_roots.unshift YellowBrickRoad.closure_library_third_party
     closure_roots.unshift YellowBrickRoad.closure_library_goog
 
-    # Generate soy files
+    # Generate soy files.
     soy_files = []
     Rails.application.assets.each_file do |asset_file|
       soy_files << asset_file.to_s if asset_file.extname == '.soy'
     end
-    soy_out_dir = Rails.root.join 'tmp', 'soy'
+    soy_out_dir = Dir.mktmpdir
     compile_soy_templates soy_files, soy_out_dir
     closure_roots << soy_out_dir
 
+    # Run closurebuilder.
     result = Utils::run_command YellowBrickRoad.closure_builder,
       command_options: {
         root: closure_roots,
@@ -126,6 +132,8 @@ private
       },
       command_error_message: 'An error occured while running closurebuilder.py.'
 
+    # Clean up and report.
+    FileUtils.remove_entry_secure soy_out_dir
     Rails.logger.info "Executed closurebuilder.py on root paths: #{closure_roots.join(', ')}"
 
     result
@@ -134,12 +142,10 @@ private
   def compile_soy_templates soy_files, out_dir
     return if soy_files.empty?
 
-    FileUtils.mkdir_p out_dir
-
     result = Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
       command_arg: soy_files.join(' '),
       command_options: {
-        outputPathFormat: File.join(out_dir, 'soy-tmp.js'),
+        outputPathFormat: File.join(out_dir, '{INPUT_DIRECTORY}/{INPUT_FILE_NAME_NO_EXT}_{LOCALE_LOWER_CASE}.js'),
         shouldProvideRequireSoyNamespaces: '',
       },
       command_error_message: 'An error occured while running closurebuilder.py.'
