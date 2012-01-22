@@ -54,6 +54,12 @@ private
         path: CLOSURE_SOYUTILS_USEGOOG_ROOT,
         path_relative_to_goog_base: '/'
       }
+    if YellowBrickRoad.protobuf_enabled
+      context.depend_on YellowBrickRoad.protos_js_out_dir
+      @closure_roots.unshift ({
+        path: YellowBrickRoad.protos_js_out_dir,
+        path_relative_to_goog_base: File.join('..', '..')
+      })
     end
 
     closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr[:path]} #{cr[:path_relative_to_goog_base]}'" }

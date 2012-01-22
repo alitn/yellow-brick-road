@@ -30,6 +30,22 @@ module YellowBrickRoad
     self.update_closure_library_properties
   end
 
+  mattr_reader :protobuf_enabled
+  @@protobuf_enabled = false
+
+  mattr_accessor :protos_dir
+  mattr_accessor :protos_js_out_dir
+  def self.initProtos
+    @@protos_dir ||= Rails.root.join 'app', 'protos', '**', '*.proto'
+    @@protos_js_out_dir ||= Rails.root.join 'app', 'assets', 'javascripts', 'protos'
+  end
+
+  mattr_accessor :protobuf_js_superclass
+  @@protobuf_js_superclass = nil
+
+  mattr_accessor :protobuf_js_advanced
+  @@protobuf_js_advanced = false
+
   mattr_accessor :standalone_soy
   @@stand_alone_soy = false
 

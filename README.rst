@@ -11,6 +11,8 @@ Yellow-brick-road is a set of tools to integrate google `closure library <http:/
 
 * Automatic dependency generation of a closure library based application, just add the ``//= require_closure_root`` directive.
 
+* Compiling protocol buffer files to closure library ``goog.proto2.Message`` subclasses, as a rake task.
+
 * Using soy templates as part of the closure library.
 
 * Using stand-alone soy templates without closure library, just configure the gem add the ``.js.soy`` file in assets directory, and it gets compiled automatically.
@@ -23,13 +25,19 @@ Setup
 To use yellow-brick-road in rails, add these gems to ``Gemfile``:
 
 ::
+
+  # To enable protocol buffer support.
+  # Add this gem _before_ yellow-brick-road.
+  gem 'protobuf-closure-library'
   
   gem 'yellow-brick-road'
+
+  # To use internal closure library.
   gem 'closure-library-wrapper',
     :git => 'git://github.com/alitn/closure-library-wrapper.git',
     :submodules => true
     
-When an external closure library source is used, the second gem is not necessary.
+When an external closure library source is used, ``closure-library-wrapper`` gem is not necessary.
 
 Configuration
 +++++++++++++

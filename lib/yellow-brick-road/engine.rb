@@ -11,6 +11,11 @@ class Engine < Rails::Engine
       app.assets.append_path CLOSURE_SOYUTILS_USEGOOG_ROOT
     end
 
+    if YellowBrickRoad.protobuf_enabled
+      YellowBrickRoad.initProtos
+      app.assets.append_path YellowBrickRoad.protos_js_out_dir
+    end
+
     app.assets.unregister_processor 'application/javascript', Sprockets::DirectiveProcessor
     app.assets.register_processor 'application/javascript', ClosureBuilderProcessor
 
