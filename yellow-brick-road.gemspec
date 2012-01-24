@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
       and a managed closure library source which can be shared among rails applications.
     FIN
 
-  s.files = Dir["{app,config,db,lib}/**/*"] + ["Rakefile", "README.rst"]
+  s.files = Dir["{app,config,db,lib,vendor}/**/*"] + ["Rakefile", "README.rst"]
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", ">= 3.1"
