@@ -54,9 +54,11 @@ module YellowBrickRoad
 
   mattr_accessor :protos_dir
   mattr_accessor :protos_js_out_dir
+  mattr_accessor :protos_rb_out_dir
   def self.initProtos
     @@protos_dir ||= Rails.root.join 'app', 'protos', '**', '*.proto'
     @@protos_js_out_dir ||= Rails.root.join 'app', 'assets', 'javascripts', 'protos'
+    @@protos_rb_out_dir ||= Rails.root.join 'app', 'protos'
   end
 
   mattr_accessor :protobuf_js_superclass
