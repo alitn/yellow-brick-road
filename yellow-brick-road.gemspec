@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", ">= 3.1"
+  s.add_dependency "systemu"
   s.add_dependency "ruby-protocol-buffers"
 
   s.add_development_dependency "sqlite3"

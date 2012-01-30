@@ -1,9 +1,11 @@
 module YellowBrickRoad
-
 class Engine < Rails::Engine
 
+  isolate_namespace YellowBrickRoad
+
   initializer :yellow_brick_road do |app|
-    if YellowBrickRoad.clear_asset_cache_on_startup
+    if YellowBrickRoad.clear_asset_cache_on_startup &&
+        File.exists?(Rails.root.join'tmp', 'cache', 'assets')
       Rails.application.assets.cache.clear
     end
 

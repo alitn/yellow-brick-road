@@ -28,6 +28,7 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
       end
 
       context.depend_on closure_root
+      register_closure_root closure_root
 
       each_entry closure_root do |pathname|
         context.depend_on pathname
@@ -50,6 +51,13 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
   end
 
 private
+
+  def register_closure_root closure_root
+    key = context.pathname.basename.to_s
+    registry = YellowBrickRoad.closure_roots_registry[key] ||= []
+    registry << closure_root.to_s
+    registry.uniq!
+  end
   
   def process_closure_roots
     return nil if @closure_roots.empty? || @has_processed_closure_roots
@@ -69,12 +77,10 @@ private
       })
     end
 
-    result = YellowBrickRoad.concat_closure_roots ?
+    YellowBrickRoad.concat_closure_roots ?
       generate_concat : generate_no_concat
 
     @has_processed_closure_roots = true
-
-    result
   end
 
   def generate_no_concat
@@ -82,7 +88,7 @@ private
     closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr[:path]} #{cr[:path_relative_to_goog_base]}'" }
 
     # Run depswriter.
-    result = Utils::run_command YellowBrickRoad.closure_deps_writer,
+    Utils::run_command YellowBrickRoad.closure_deps_writer,
       command_options: {
         root_with_prefix: closure_roots_with_prefix,
         output_file: @closure_deps_file
@@ -92,8 +98,6 @@ private
     # Clean up and report.
     closure_roots = @closure_roots.map { |cr| cr[:path] }
     Rails.logger.info "Executed closure depswriter.py on root paths: #{closure_roots.join(', ')}"
-
-    result
   end
 
   def generate_concat
@@ -123,7 +127,7 @@ private
     closure_roots << soy_out_dir
 
     # Run closurebuilder.
-    result = Utils::run_command YellowBrickRoad.closure_builder,
+    Utils::run_command YellowBrickRoad.closure_builder,
       command_options: {
         root: closure_roots,
         output_mode: 'script',
@@ -135,14 +139,12 @@ private
     # Clean up and report.
     FileUtils.remove_entry_secure soy_out_dir
     Rails.logger.info "Executed closurebuilder.py on root paths: #{closure_roots.join(', ')}"
-
-    result
   end
 
   def compile_soy_templates soy_files, out_dir
     return if soy_files.empty?
 
-    result = Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
+    Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
       command_arg: soy_files.join(' '),
       command_options: {
         outputPathFormat: File.join(out_dir, '{INPUT_DIRECTORY}/{INPUT_FILE_NAME_NO_EXT}_{LOCALE_LOWER_CASE}.js'),
@@ -152,4 +154,7 @@ private
   end
 
 end
+
+  mattr_reader :closure_roots_registry
+  @@closure_roots_registry = {}
 end

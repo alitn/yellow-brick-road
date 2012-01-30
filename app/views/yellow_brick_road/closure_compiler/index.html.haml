@@ -1,0 +1,26 @@
+%html
+  %head
+
+    = stylesheet_link_tag 'yellow_brick_road/compiler'
+    = csrf_meta_tags
+
+  %body
+
+    %form{method: 'post'}
+      = label_tag :cl, 'Compilation level'
+      = select_tag :cl, options_for_select(@compilation_levels, @compilation_levels_default)
+      = label_tag :wl, 'Warning level'
+      = select_tag :wl, options_for_select(@warning_levels, @warning_levels_default)
+      = submit_tag 'Compile'
+
+    - @results.each do |start_point, data|
+      %h3
+        ➔
+        = start_point
+      %pre
+        = data[:compiler_output].html_safe
+
+      Manifest:
+      %pre
+        - data[:js_files].each do |js_file|
+          = js_file

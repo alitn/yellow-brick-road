@@ -10,4 +10,5 @@ rescue LoadError
 end
 require 'yellow-brick-road/directive_processor'
 require 'yellow-brick-road/soy_processor'
+require 'yellow-brick-road/closure_compiler'
 require 'yellow-brick-road/engine'

@@ -39,6 +39,7 @@ class SoyProcessor < Tilt::Template
     # the output, the output is written to a tempfile.
     # tempoutput = Rails.root.join 'tmp', "soy-#{Time.now.to_i.to_s}.js"
     tempfile = Tempfile.new 'soy'
+
     compiler_options = @compiler_options.merge outputPathFormat: tempfile.path
 
     compile compiler_options
@@ -52,7 +53,7 @@ class SoyProcessor < Tilt::Template
 private
 
   def compile compiler_options
-    result = Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
+    Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
       command_arg: file,
       command_options: compiler_options,
       command_error_message: 'An error occured while running closure soy template compiler.'
