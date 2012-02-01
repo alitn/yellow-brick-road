@@ -44,24 +44,45 @@ class ClosureCompiler
 private
 
   def compile_start_point start_point
-
-    dependencies = Rails.application.assets[start_point]
-
+    # Rails.application.assets[start_point] must be called before
+    # anything else, in order to init.
+    start_point_dependencies = Rails.application.assets[start_point].to_a
+    start_point_dependencies.uniq!
+    # Exclude the closure root deps file from dependencies.
     closure_deps_file = Rails.root.join(*CLOSURE_DEPS_FILE_RELPATH).to_s
 
-    # Process and copy *.js.foo source dependencies to target *.js.
-    dependencies.to_a.uniq.each do |asset|
-      asset_path = asset.pathname.to_s
+    # Process and copy source *.js dependencies to target *.js.
+    start_point_dependencies.each do |processed_asset|
+      asset_path = processed_asset.pathname.to_s
 
       next if !asset_path.starts_with? @source_path
       next if asset_path == closure_deps_file
 
       target_asset = asset_path.gsub @source_path, @target_path
       FileUtils.mkdir_p Pathname.new(target_asset).dirname
+      processed_asset.write_to "#{target_asset}.js"
+    end
+
+    # Find all files under each closure root.
+    # TODO: extend this for multiple closure roots.
+    closure_root = YellowBrickRoad.closure_roots_registry[start_point][0]
+    closure_root_dependencies = Dir["#{closure_root}/**/*"].find_all{|f| !File.directory? f}
+    closure_root_dependencies.uniq!
+
+    # Process and copy source *.js dependencies to target *.js.
+    closure_root_dependencies.each do |asset_path|
+      next if !asset_path.starts_with? @source_path
+      next if asset_path == closure_deps_file
+
+      asset = Rails.application.assets[asset_path]
+      next if !asset
+
+      target_asset = asset_path.gsub @source_path, @target_path
+      FileUtils.mkdir_p Pathname.new(target_asset).dirname
       asset.write_to "#{target_asset}.js"
     end
 
-    js_files = generate_closure_dependencies YellowBrickRoad.closure_roots_registry[start_point][0]
+    js_files = generate_closure_dependencies
     raise "Generated javascript dependencies for #{start_point} is empty." if js_files.empty?
 
     js_output_file = File.join @tmpdir, 'out.js'
@@ -95,7 +116,7 @@ private
     {compiler_output: compiler_output, js_files: js_files}
   end
 
-  def generate_closure_dependencies closure_root
+  def generate_closure_dependencies
     # Check for namespace.
     namespace = YellowBrickRoad.closure_namespace
     if namespace.empty?
@@ -109,7 +130,6 @@ private
 
     # Gather roots.
     closure_roots = [
-      closure_root,
       @target_path,
       YellowBrickRoad.closure_library_goog,
       YellowBrickRoad.closure_library_third_party,
