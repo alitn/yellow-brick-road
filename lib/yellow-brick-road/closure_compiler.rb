@@ -31,8 +31,7 @@ class ClosureCompiler
     @tmpdir = Dir.mktmpdir
     @target_path = File.join(@tmpdir, 'js').to_s
 
-    start_points = %w(closure-application.js)
-    results = Hash[*start_points.collect { |start_point|
+    results = Hash[*YellowBrickRoad.closure_start_points.collect { |start_point|
         [start_point, compile_start_point(start_point)]
       }.flatten]
 

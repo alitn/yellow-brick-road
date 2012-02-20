@@ -17,7 +17,11 @@ YellowBrickRoad.setup do |config|
   # http://code.google.com/closure/library/docs/closurebuilder.html
   # This a required options when Rails.application.config.assets.debug
   # is set to false.
-  # config.closure_namespace = 'your.closure.namespace'
+  config.closure_namespace = 'your.closure.namespace'
+
+  # Set the starting points for precompilation and compilation tests
+  # under /_ybr.
+  config.closure_start_points = %w(application.js)
 
   # Uncomment this to use yellow-brick-road as an standalone
   # soy template compiler. If this option is used, the output

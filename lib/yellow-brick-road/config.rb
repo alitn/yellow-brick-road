@@ -42,6 +42,9 @@ module YellowBrickRoad
   mattr_accessor :closure_namespace
   @@closure_namespace = ''
 
+  mattr_accessor :closure_start_points
+  @@closure_start_points = []
+
   mattr_accessor :concat_closure_roots
   def self.initClosureConfig
     @@concat_closure_roots = !Rails.application.config.assets.debug
