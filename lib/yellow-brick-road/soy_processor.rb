@@ -28,24 +28,18 @@ class SoyProcessor < Tilt::Template
   attr_reader :namespace
 
   def evaluate scope, locals, &block
-    # When concatenating closure code by closurebuilder,
-    # the soy processor should not function as it will lead to
-    # duplicated code.
-    # Completely unregistering the soy processor is not an option
-    # as we need to track the soy files assets.
-    return ';' if YellowBrickRoad.concat_closure_roots
-
     # Since SoyToJsSrcCompiler does not provide a stdout access to
     # the output, the output is written to a tempfile.
     # tempoutput = Rails.root.join 'tmp', "soy-#{Time.now.to_i.to_s}.js"
     tempfile = Tempfile.new 'soy'
 
-    compiler_options = @compiler_options.merge outputPathFormat: tempfile.path
-
-    compile compiler_options
-
-    @output = IO.read tempfile.path
-    tempfile.unlink
+    begin
+      compiler_options = @compiler_options.merge outputPathFormat: tempfile.path
+      compile compiler_options
+      @output = IO.read tempfile.path
+    ensure
+      tempfile.unlink
+    end
 
     @output
   end

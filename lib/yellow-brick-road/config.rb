@@ -45,9 +45,18 @@ module YellowBrickRoad
   mattr_accessor :closure_start_points
   @@closure_start_points = []
 
-  mattr_accessor :concat_closure_roots
+  mattr_accessor :closure_compiler
+  @@closure_compiler = {}
+
   def self.initClosureConfig
-    @@concat_closure_roots = !Rails.application.config.assets.debug
+    @@closure_compiler = {
+      enable: !Rails.application.config.assets.debug,
+      options: {}
+    }.merge(@@closure_compiler)
+
+    if @@closure_compiler[:enable]
+      Rails.application.config.assets.js_compressor = YellowBrickRoad::IdentityCompiler.new
+    end
   end
 
   mattr_accessor :clear_asset_cache_on_startup

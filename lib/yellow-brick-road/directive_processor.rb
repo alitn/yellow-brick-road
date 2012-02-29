@@ -1,4 +1,6 @@
 require 'sprockets/directive_processor.rb'
+require 'sprockets/bundled_asset.rb'
+require 'fileutils'
 
 module YellowBrickRoad
 class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
@@ -8,18 +10,12 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
   def prepare
     super
     @closure_roots = []
-    @closure_deps_file = Rails.root.join *CLOSURE_DEPS_FILE_RELPATH
-    @closure_root_prefix = File.join '..', '..'
+    @closure_root_prefixes = {}
     @has_processed_closure_roots = false
+    @has_closure_root = false
   end
 
   def process_require_closure_root_directive path
-    if !YellowBrickRoad.concat_closure_roots
-      context.require_asset YellowBrickRoad.closure_library_base
-      context.require_asset YellowBrickRoad.closure_library_deps
-    end
-    context.require_asset @closure_deps_file
-
     if relative? path
       closure_root = pathname.dirname.join(path).expand_path
 
@@ -38,16 +34,52 @@ class ClosureBuilderProcessor < Sprockets::DirectiveProcessor
       raise ArgumentError, 'require_closure_root argument must be a relative path'
     end
 
+    # require_closure_root ./app -> app
+    # require_closure_root ../app -> ../app
     relpath = path.starts_with?('./') ? path[2..-1] : path
-    @closure_roots << {
-      path: closure_root.to_s,
-      path_relative_to_goog_base: File.join('..', '..', relpath)
-    }
+
+    # require_closure_root ./app in file appdir/file.js  -> appdir
+    parent = Pathname.new(context.logical_path).parent.to_s
+    parent = '' if parent == '.'
+
+    path_relative_to_goog_base = File.join GOOG_BASE_REL_PATH, parent, relpath
+    
+    closure_root_path = closure_root.to_s
+    @closure_roots << closure_root_path
+    @closure_root_prefixes[closure_root_path] = path_relative_to_goog_base
   end
 
   def process_directives
+    if @has_closure_root
+      # Require closure base once, and before any other assets.
+      context.require_asset YellowBrickRoad.closure_library_base
+    end
+
     super
     process_closure_roots
+  end
+
+  def evaluate context, locals, &block
+    @has_closure_root = directives.map{|d| d[1]}.include? 'require_closure_root'
+
+    if YellowBrickRoad.closure_compiler[:enable] && @has_closure_root
+      @context = context
+
+      # Only process require_closure_root to keep the dependency sane.
+      directives.each do |line_number, name, *args|
+        next if name == 'require_closure_root'
+        context.__LINE__ = line_number
+        send("process_#{name}_directive", *args)
+        context.__LINE__ = nil
+      end
+
+      @has_written_body = true
+      @result = generate_with_closure_compiler
+    else
+      super
+    end
+
+    @result
   end
 
 private
@@ -60,97 +92,72 @@ private
   end
   
   def process_closure_roots
-    return nil if @closure_roots.empty? || @has_processed_closure_roots
+    return if @closure_roots.empty? || @has_processed_closure_roots
+
+    @closure_roots.uniq!
 
     if !YellowBrickRoad.standalone_soy
-      @closure_roots.unshift ({
-        path: CLOSURE_SOYUTILS_USEGOOG_ROOT,
-        path_relative_to_goog_base: GOOG_BASE_REL_PATH
-      })
+      @closure_roots.unshift CLOSURE_SOYUTILS_USEGOOG_ROOT
+      @closure_root_prefixes[CLOSURE_SOYUTILS_USEGOOG_ROOT] = GOOG_BASE_REL_PATH
     end
 
     if YellowBrickRoad.protobuf_enabled
       context.depend_on YellowBrickRoad.protos_js_out_dir
-      @closure_roots.unshift ({
-        path: YellowBrickRoad.protos_js_out_dir,
-        path_relative_to_goog_base: File.join('..', '..')
-      })
+      @closure_roots.unshift YellowBrickRoad.protos_js_out_dir
+      @closure_root_prefixes[YellowBrickRoad.protos_js_out_dir] = GOOG_BASE_REL_PATH
     end
 
-    YellowBrickRoad.concat_closure_roots ?
-      generate_concat : generate_no_concat
+    generate_closure_root_deps
 
     @has_processed_closure_roots = true
   end
 
-  def generate_no_concat
-    # Gather roots.
-    closure_roots_with_prefix = @closure_roots.map { |cr| "'#{cr[:path]} #{cr[:path_relative_to_goog_base]}'" }
+  def generate_closure_root_deps
+    ClosureRoot.process_roots @closure_roots, copy_dot_js: false do |properties|
+      closure_roots_with_prefix = @closure_roots.map { |closure_root|
+        processed_root = properties[:processed_roots][closure_root]
+        prefix = @closure_root_prefixes[closure_root]
+        roots = ["'#{closure_root} #{prefix}'"]
+        roots.push("'#{processed_root} #{prefix}'") if processed_root
+        roots
+      }.flatten
 
-    # Run depswriter.
-    Utils::run_command YellowBrickRoad.closure_deps_writer,
-      command_options: {
-        root_with_prefix: closure_roots_with_prefix,
-        output_file: @closure_deps_file
-      },
-      command_error_message: 'An error occured while running closure depswriter.py.'
+      stdout = Utils::run_command YellowBrickRoad.closure_deps_writer,
+        command_options: {
+          root_with_prefix: closure_roots_with_prefix
+        },
+        command_error_message: 'An error occured while running closure depswriter.py.'
+      @result << stdout.join('')
+    end
     
-    # Clean up and report.
-    closure_roots = @closure_roots.map { |cr| cr[:path] }
-    Rails.logger.info "Executed closure depswriter.py on root paths: #{closure_roots.join(', ')}"
+    Rails.logger.info "Executed closure depswriter.py on closure root paths: #{@closure_roots.join(', ')}"
   end
 
-  def generate_concat
-    # Check for namespace.
-    namespace = YellowBrickRoad.closure_namespace
-    if namespace.empty?
-      raise <<-FIN
-        No closure namespace was given. One or more input files to
-        calculate dependencies is required by closurebuilder.py. Set
-        a namespace or an array of namespaces to YellowBrickRoad.closure_namespace
-        in the initializer.
-      FIN
-    end
+  def generate_with_closure_compiler
+    # Ugly hack to avoid circular dependency:
+    # Copy this asset, process it and pass the output.
+    # TODO: Find a better solution.
+    closure_compiler_enabled = YellowBrickRoad.closure_compiler[:enable]
+    YellowBrickRoad.closure_compiler[:enable] = false
+    copy_file_extension_name = "-#{Time.now.to_i}.js"
+    copy_file_logical_path = "#{context.logical_path}#{copy_file_extension_name}"
+    copy_file_path = "#{pathname}#{copy_file_extension_name}"
+    copy_file_pathname = Pathname.new copy_file_path
 
-    # Gather roots.
-    closure_roots = @closure_roots.map { |cr| cr[:path] }
-    closure_roots.unshift YellowBrickRoad.closure_library_third_party
-    closure_roots.unshift YellowBrickRoad.closure_library_goog
+    js_output = ''
 
-    # Generate soy files.
-    soy_files = []
-    Rails.application.assets.each_file do |asset_file|
-      soy_files << asset_file.to_s if asset_file.extname == '.soy'
-    end
-    soy_out_dir = Dir.mktmpdir
-    compile_soy_templates soy_files, soy_out_dir
-    closure_roots << soy_out_dir
+    begin
+      FileUtils.cp pathname, copy_file_path
+      copy_asset = Sprockets::BundledAsset.new context.environment,
+        copy_file_logical_path, copy_file_pathname
+      compiler = ClosureCompiler.new(compiler_options: YellowBrickRoad.closure_compiler[:options])
+      js_output = compiler.compile_start_point(copy_asset)[:js_output]
+    ensure
+      FileUtils.rm(copy_file_path) if File.exists?(copy_file_path)
+      YellowBrickRoad.closure_compiler[:enable] = closure_compiler_enabled
+    end 
 
-    # Run closurebuilder.
-    Utils::run_command YellowBrickRoad.closure_builder,
-      command_options: {
-        root: closure_roots,
-        output_mode: 'script',
-        namespace: namespace,
-        output_file: @closure_deps_file
-      },
-      command_error_message: 'An error occured while running closurebuilder.py.'
-
-    # Clean up and report.
-    FileUtils.remove_entry_secure soy_out_dir
-    Rails.logger.info "Executed closurebuilder.py on root paths: #{closure_roots.join(', ')}"
-  end
-
-  def compile_soy_templates soy_files, out_dir
-    return if soy_files.empty?
-
-    Utils::run_command "java -jar #{CLOSURE_SOY_COMPILER}",
-      command_arg: soy_files.join(' '),
-      command_options: {
-        outputPathFormat: File.join(out_dir, '{INPUT_DIRECTORY}/{INPUT_FILE_NAME_NO_EXT}_{LOCALE_LOWER_CASE}.js'),
-        shouldProvideRequireSoyNamespaces: '',
-      },
-      command_error_message: 'An error occured while running closurebuilder.py.'
+    js_output
   end
 
 end

@@ -8,6 +8,7 @@ begin
   require 'yellow-brick-road/protobuf_compiler'
 rescue LoadError
 end
+require 'yellow-brick-road/closure_root'
 require 'yellow-brick-road/directive_processor'
 require 'yellow-brick-road/soy_processor'
 require 'yellow-brick-road/closure_compiler'
