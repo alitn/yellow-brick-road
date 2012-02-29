@@ -9,7 +9,7 @@ gem 'closure-library-wrapper',
   :git => 'git://github.com/alitn/closure-library-wrapper.git',
   :submodules => true
 
-gem 'protobuf-closure-library', '0.1.6'
+gem 'rails', '>= 3.1'
 
 # jquery-rails is used by the dummy application
 gem 'jquery-rails'
