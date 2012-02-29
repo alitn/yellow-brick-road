@@ -11,7 +11,8 @@
       = select_tag :cl, options_for_select(@compilation_levels, @compilation_levels_default)
       = label_tag :wl, 'Warning level'
       = select_tag :wl, options_for_select(@warning_levels, @warning_levels_default)
-      = submit_tag 'Compile'
+      = submit_tag 'Compile', name: 'compile'
+      = submit_tag (@is_applied ? 'Revert settings to default (Experimental)' : 'Apply settings to application (Experimental)'), name: 'apply_settings'
 
     - @results.each do |start_point, data|
       %h3
