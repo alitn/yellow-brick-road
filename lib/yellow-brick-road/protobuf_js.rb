@@ -8,6 +8,9 @@ module YellowBrickRoad
     if YellowBrickRoad.protobuf_js_superclass
       generator_options[:js_superclass] = YellowBrickRoad.protobuf_js_superclass
     end
+    if YellowBrickRoad.protobuf_js_model_superclass
+      generator_options[:js_model_superclass] = YellowBrickRoad.protobuf_js_model_superclass
+    end
     if YellowBrickRoad.protobuf_js_collection_superclass
       generator_options[:js_collection_superclass] = YellowBrickRoad.protobuf_js_collection_superclass
     end

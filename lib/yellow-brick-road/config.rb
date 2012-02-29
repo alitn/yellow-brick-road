@@ -68,6 +68,9 @@ module YellowBrickRoad
   mattr_accessor :protobuf_js_superclass
   @@protobuf_js_superclass = nil
 
+  mattr_accessor :protobuf_js_model_superclass
+  @@protobuf_js_model_superclass = nil
+
   mattr_accessor :protobuf_js_collection_superclass
   @@protobuf_js_collection_superclass = nil
 
