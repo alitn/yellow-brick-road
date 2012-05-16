@@ -74,9 +74,9 @@ class ClosureCompiler
         YellowBrickRoad.closure_library_third_party,
         CLOSURE_SOYUTILS_USEGOOG_ROOT]
 
-      if YellowBrickRoad.protobuf_enabled
-        roots << YellowBrickRoad.protos_js_out_dir
-      end
+      # if YellowBrickRoad.protobuf_enabled
+      #   roots << YellowBrickRoad.protos_js_out_dir
+      # end
 
       js_list = File.join properties[:tmp_dir], 'list.js'
 
