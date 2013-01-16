@@ -19,7 +19,7 @@ module YellowBrickRoad
 
   CLOSURE_DEPS_FILE_RELPATH = ['app', 'assets', 'javascripts', 'closure-deps.js']
 
-  CLOSURE_COMPILER = File.join VENDOR_ROOT, 'jars', 'ClosureCompiler-120917.jar'
+  CLOSURE_COMPILER = File.join VENDOR_ROOT, 'jars', 'ClosureCompiler-121212.jar'
   CLOSURE_SOY_COMPILER = File.join VENDOR_ROOT, 'jars', 'SoyToJsSrcCompiler-111222.jar'
 
   # Config.
