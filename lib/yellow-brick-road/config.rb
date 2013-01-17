@@ -60,7 +60,7 @@ module YellowBrickRoad
   end
 
   mattr_accessor :clear_asset_cache_on_startup
-  @@clear_asset_cache_on_startup = true
+  @@clear_asset_cache_on_startup = false
 
   mattr_reader :protobuf_enabled
   @@protobuf_enabled = false
