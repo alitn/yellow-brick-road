@@ -28,18 +28,24 @@ class ClosureCompiler
     @source_path = Rails.root.to_s
   end
 
-  def compile
+  def compile start_points = nil
     Rails.application.assets.cache.clear
     # Rails.application.config.assets.digest = false
+    
+    start_points = if (start_points.nil? || start_points.empty?)
+      YellowBrickRoad.closure_start_points.keys
+    elsif !start_points.kind_of?(Array)
+      [start_points]
+    end
 
-    results = Hash[*YellowBrickRoad.closure_start_points.collect { |start_point|
+    results = Hash[*start_points.collect { |start_point|
         [start_point, compile_start_point(start_point)]
       }.flatten]
     
     results
   end
 
-  def compile_start_point start_point
+  def compile_start_point start_point, namespace = nil
     start_point_asset = start_point.kind_of?(String) ? Rails.application.assets[start_point] : start_point
     start_point_dependencies = start_point_asset.to_a
     start_point_dependencies.uniq!
@@ -47,14 +53,21 @@ class ClosureCompiler
     start_point_key = start_point.kind_of?(String) ? start_point : start_point.pathname.basename.to_s
     closure_roots = YellowBrickRoad.closure_roots_registry[start_point_key]
 
+    # Validate the start point.
+    if !namespace && !YellowBrickRoad.closure_start_points.keys.include?(start_point_key)
+      raise <<-FIN
+        Given start point '#{start_point_key}' is not registered in
+        YellowBrickRoad.closure_start_points hash map.
+      FIN
+    end
+
     # Check for namespace.
-    namespace = YellowBrickRoad.closure_namespace
+    namespace ||= YellowBrickRoad.closure_start_points[start_point_key]
     if namespace.empty?
       raise <<-FIN
-        No closure namespace was given. One or more input files to
-        calculate dependencies is required by closurebuilder.py. Set
-        a namespace or an array of namespaces to YellowBrickRoad.closure_namespace
-        in the initializer.
+        No closure namespace was given for startpoint '#{start_point_key}'.
+        Assign a value in YellowBrickRoad.closure_start_points hash map
+        in the initializer file.
       FIN
     end
 

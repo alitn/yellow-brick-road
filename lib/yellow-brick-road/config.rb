@@ -39,11 +39,8 @@ module YellowBrickRoad
     self.update_closure_library_properties
   end
 
-  mattr_accessor :closure_namespace
-  @@closure_namespace = ''
-
   mattr_accessor :closure_start_points
-  @@closure_start_points = []
+  @@closure_start_points = {}
 
   mattr_accessor :closure_compiler
   @@closure_compiler = {}

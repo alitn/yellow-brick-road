@@ -7,6 +7,8 @@
   %body
 
     %form{method: 'post'}
+      = label_tag :sp, 'Start point'
+      = select_tag :sp, options_for_select(@start_points, @start_points_default)
       = label_tag :cl, 'Compilation level'
       = select_tag :cl, options_for_select(@compilation_levels, @compilation_levels_default)
       = label_tag :wl, 'Warning level'

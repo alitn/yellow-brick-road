@@ -143,6 +143,11 @@ private
     copy_file_logical_path = "#{context.logical_path}#{copy_file_extension_name}"
     copy_file_path = "#{pathname}#{copy_file_extension_name}"
     copy_file_pathname = Pathname.new copy_file_path
+    start_point_key = context.pathname.basename.to_s
+    namespace = YellowBrickRoad.closure_start_points[start_point_key]
+
+    puts "[yellow-brick-road] Now compiling start point '#{start_point_key}' with namespace '#{namespace}' ..."
+    start_time = Time.now
 
     js_output = ''
 
@@ -151,11 +156,14 @@ private
       copy_asset = Sprockets::BundledAsset.new context.environment,
         copy_file_logical_path, copy_file_pathname
       compiler = ClosureCompiler.new(compiler_options: YellowBrickRoad.closure_compiler[:options])
-      js_output = compiler.compile_start_point(copy_asset)[:js_output]
+      js_output = compiler.compile_start_point(copy_asset, namespace)[:js_output]
     ensure
       FileUtils.rm(copy_file_path) if File.exists?(copy_file_path)
       YellowBrickRoad.closure_compiler[:enable] = closure_compiler_enabled
-    end 
+    end
+
+    delta = Time.now - start_time
+    puts "[yellow-brick-road]   -- took #{delta} s."
 
     js_output
   end

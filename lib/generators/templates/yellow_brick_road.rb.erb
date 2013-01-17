@@ -12,16 +12,16 @@ YellowBrickRoad.setup do |config|
   # When this options is used, the above commit-id lock will be ignored.
   # config.closure_library_root = '/path/to/your/closure-library-root'
 
-  # Set a namespace or an array of namespaces of your closure
-  # app to be passed to closurebuilder.py, see: 
-  # http://code.google.com/closure/library/docs/closurebuilder.html
-  # This a required options when Rails.application.config.assets.debug
-  # is set to false.
-  config.closure_namespace = 'your.closure.namespace'
-
   # Set the starting points for precompilation and compilation tests
-  # under /_ybr.
-  config.closure_start_points = %w(application.js)
+  # under /_ybr, or when Rails.application.config.assets.debug is false.
+  # This is a hash map where the keys are the javascript file start points
+  # and the values are the namespace(s) for that start point to be passed
+  # to closurebuilder.py. For more on namespaces, see: 
+  # http://code.google.com/closure/library/docs/closurebuilder.html
+  config.closure_start_points = {
+    'application.js' => 'application.start',
+    'another_start_point.js' => 'namespace_a namespace_b'
+  }
 
   # Uncomment this to use yellow-brick-road as an standalone
   # soy template compiler. If this option is used, the output

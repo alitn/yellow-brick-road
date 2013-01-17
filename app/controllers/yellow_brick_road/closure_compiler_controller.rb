@@ -14,13 +14,15 @@ class ClosureCompilerController < ActionController::Base
     }
 
     if params['compile']
-      compile compiler_options
+      compile params[:sp], compiler_options
     elsif params['apply_settings'] # Experimental.
       Rails.application.assets.cache.clear
       @@is_applied ? default_settings : apply_settings(compiler_options)
     end
 
     @is_applied = @@is_applied
+    @start_points = YellowBrickRoad.closure_start_points.keys
+    @start_points_default = params[:sp] || @start_points[0]
     @compilation_levels = ClosureCompiler::COMPILATION_LEVEL.map {|k| [k, k]}
     @compilation_levels_default = params[:cl] || ClosureCompiler::COMPILATION_LEVEL[1]
     @warning_levels = ClosureCompiler::WARNING_LEVEL.map {|k| [k, k]}
@@ -29,12 +31,12 @@ class ClosureCompilerController < ActionController::Base
 
 private
 
-  def compile compiler_options
+  def compile start_point, compiler_options
     begin
       closure_compiler_enabled = YellowBrickRoad.closure_compiler[:enable]
       YellowBrickRoad.closure_compiler[:enable] = false
       compiler = ClosureCompiler.new compiler_options: compiler_options, stats: true
-      @results = compiler.compile
+      @results = compiler.compile start_point
     ensure
       YellowBrickRoad.closure_compiler[:enable] = closure_compiler_enabled
     end
